@@ -8,10 +8,15 @@ describe ('login and logout to some environment', function() {
     
     describe ('login and logout', function () {
         
-        var nightmare;
+        let nightmare;
         
         beforeEach (function() {
-            nightmare = Nightmare();
+            nightmare = Nightmare({
+                width: 1900,
+                height: 1200,
+                waitTimeout: 100000
+                //show: true,
+            });
         });
         
         afterEach (function*() {
@@ -19,40 +24,51 @@ describe ('login and logout to some environment', function() {
         });
         
         it ('login', function*() {
-    
             let location = yield nightmare
-                .viewport(1024, 768)
                 .goto(config.app.login.url)
-                .wait()
-                .type('input#user', config.app.login.username)
-                .type('input#password', config.app.login.password)
+                .insert('input#user', config.app.login.username)
+                .insert('input#password', config.app.login.password)
                 .click('#login')
-                .wait(250)
-                .screenshot('./logs/screenshots/login.png')
-                .wait(250)
+                .wait('#menuContent > ul > li[name="Home"]')
                 .evaluate(function () {
                     return location.origin + location.pathname;
                 })
             ;
-    
-            location.should.eql(config.app.login.url);
+            location.should.eql(config.app.url);
         });
         
         it ('logout', function*() {
-    
             let location = yield nightmare
-                .goto(config.app.login.url)
-                .wait()
+                .goto(config.app.url)
+                .wait('input#user')
+                .insert('input#user', config.app.login.username)
+                .insert('input#password', config.app.login.password)
+                .click('#login')
+                .wait('#menuContent > ul > li[name="Home"]')
+                .wait('div.nav.nav-header.user.pull-right > ul > li > a')
+                .click('div.nav.nav-header.user.pull-right > ul > li > a')
+                .wait('#logout')
                 .click('#logout')
-                .wait(250)
-                .screenshot('./logs/screenshots/logout.png')
-                .wait(250)
+                .wait('input#user')
                 .evaluate(function () {
                     return location.origin + location.pathname;
                 })
             ;
+            location.should.eql(config.app.login.url);
+        });
     
-            location.should.eql(config.app.logout.url);
+        it ('Bad login', function*() {
+            let error = yield nightmare
+                .goto(config.app.login.url)
+                .insert('input#user', 'ME_NO_EGSISTS')
+                .insert('input#password', config.app.login.password)
+                .click('#login')
+                .wait('p#error')
+                .evaluate(function () {
+                    return document.querySelector('#error span').innerText;
+                })
+            ;
+            error.should.eql(config.app.login.invalid);
         });
         
     });
