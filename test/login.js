@@ -1,8 +1,7 @@
 require('mocha-generators').install();
 
-var Nightmare = require('nightmare');
-var config = require('../config/dev-lunaria-it');
-var should = require('chai').should();
+const Nightmare = require('nightmare');
+const config = require('../config/dev-lunaria-it');
 
 describe ('login and logout to some environment', function() {
     
@@ -14,7 +13,10 @@ describe ('login and logout to some environment', function() {
             nightmare = Nightmare({
                 width: 1900,
                 height: 1200,
-                waitTimeout: 100000
+                waitTimeout: 60000,
+                webPreferences:{
+                    partition: 'tb_crm35'
+                },
                 //show: true,
             });
         });
